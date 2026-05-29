@@ -1,7 +1,0 @@
-id,owner_name,email,type,day,start,end,subjects,place
-"sch_001","José Alberto Carreón Rodríguez","jacarreonr@uaemex.mx","asesoria","02/06/2026","10:00","11:00","Cálculo III","Cubículo Tutoría"
-"sch_002","Francisco Chavez Casta�eda","fchavezc196@profesor.uaemex.mx","asesoria","22/06/2026","07:00","09:00","Programaci�n B�sica","Cub�culo Edificio E"
-"sch_003","Mentor 1","tutor�a_fi@uaemex.mx","tutoria","15/06/2026","11:00","12:00","Ecuaciones Diferenciales","MS TEAMS"
-"sch_004","Vladimir Alb�ter Bernal","vaalbiterb@uaemex.mx","asesoria","08/06/2026","08:00","09:00","C�lculo I","Cubículo Tutoría"
-"sch_005","Francisco Becerril Vilchis","fbecerrilv@uaemex.mx","asesoria","22/06/2026","07:00","09:00","�lgebra Superior","Cub�culo Edificio A"
-"sch_006","Mentor 2","tutoria_fi@uaemex.mx","tutoria","18/06/2026","16:00","17:00","Mec�nica del Medio Continuo","Sal�n I-203"
