@@ -1,0 +1,80 @@
+[
+  {
+    "id": "sch_001",
+    "owner_name": "José Alberto Carreón Rodríguez",
+    "email": "jacarreonr@uaemex.mx",
+    "type": "asesoria",
+    "day": "02/06/2026",
+    "start": "10:00",
+    "end": "11:00",
+    "subjects": [
+      "Cálculo III"
+    ],
+    "place": "Cubículo Tutoría"
+  },
+  {
+    "id": "sch_002",
+    "owner_name": "Mentor 1",
+    "email": "tutor�a_fi@uaemex.mx",
+    "type": "tutoria",
+    "day": "15/06/2026",
+    "start": "11:00",
+    "end": "12:00",
+    "subjects": [
+      "Ecuaciones Diferenciales"
+    ],
+    "place": "MS TEAMS"
+  },
+  {
+    "id": "sch_003",
+    "owner_name": "Francisco Chavez Casta�eda",
+    "email": "fchavezc196@profesor.uaemex.mx",
+    "type": "asesoria",
+    "day": "22/06/2026",
+    "start": "07:00",
+    "end": "09:00",
+    "subjects": [
+      "Programaci�n B�sica"
+    ],
+    "place": "Cub�culo Edificio E"
+  },
+  {
+    "id": "sch_004",
+    "owner_name": "Vladimir Alb�ter Bernal",
+    "email": "vaalbiterb@uaemex.mx",
+    "type": "asesoria",
+    "day": "08/06/2026",
+    "start": "08:00",
+    "end": "09:00",
+    "subjects": [
+      "C�lculo I"
+    ],
+    "place": "Cubículo Tutoría"
+  },
+  {
+    "id": "sch_005",
+    "owner_name": "Mentor 2",
+    "email": "tutoria_fi@uaemex.mx",
+    "type": "tutoria",
+    "day": "18/06/2026",
+    "start": "16:00",
+    "end": "17:00",
+    "subjects": [
+      "Mec�nica del Medio Continuo"
+    ],
+    "place": "Sal�n I-203"
+  },
+  {
+    "id": "sch_006",
+    "owner_name": "Francisco Becerril Vilchis",
+    "email": "fbecerrilv@uaemex.mx",
+    "type": "asesoria",
+    "day": "22/06/2026",
+    "start": "07:00",
+    "end": "09:00",
+    "subjects": [
+      "�lgebra Superior"
+    ],
+    "place": "Cub�culo Edificio A"
+  }
+]
