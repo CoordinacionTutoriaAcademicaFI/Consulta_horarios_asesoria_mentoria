@@ -232,10 +232,23 @@ const DataModule = (() => {
   };
 
   const loadSchedules = async () => {
-
     try {
       const r = await fetch(BASE + 'schedules.json?t=' + Date.now());
-      if (r.ok) { schedules = await r.json(); return schedules; }
+      if (r.ok) { 
+        const rawData = await r.json(); 
+        
+        schedules = rawData.map(s => {
+          if (typeof s.subjects === 'string') {
+            
+            s.subjects = s.subjects.split(/[;|,]/).map(x => x.trim()).filter(Boolean);
+          } else if (!Array.isArray(s.subjects)) {
+            
+            s.subjects = [];
+          }
+          return s;
+        });
+        return schedules; 
+      }
     } catch(e) {}
     
     try {

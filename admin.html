@@ -209,6 +209,11 @@
           <thead><tr><th>ID</th><th>Asesor</th><th>Tipo</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Materias</th><th>Lugar</th></tr></thead>
           <tbody id="data-tbody"></tbody>
         </table></div>
+        <div style="display:flex; justify-content:center; gap:1rem; margin-top:1.2rem; align-items:center;">
+          <button class="btn bg bsm" id="btn-admin-prev" onclick="AdminModule.prevPage()">← Anteriores</button>
+          <span style="font-size:0.8rem; color:var(--ts)" id="admin-page-info">Página 1</span>
+          <button class="btn bg bsm" id="btn-admin-next" onclick="AdminModule.nextPage()">Siguientes 1000 →</button>
+        </div>
       </div>
     </div>
     
@@ -426,10 +431,20 @@ const DataModule = (() => {
   };
 
   const loadSchedules = async () => {
-   
     try {
       const r = await fetch(BASE + 'schedules.json?t=' + Date.now());
-      if (r.ok) { schedules = await r.json(); return schedules; }
+      if (r.ok) { 
+        const rawData = await r.json(); 
+        schedules = rawData.map(s => {
+          if (typeof s.subjects === 'string') {
+            s.subjects = s.subjects.split(/[;|,]/).map(x => x.trim()).filter(Boolean);
+          } else if (!Array.isArray(s.subjects)) {
+            s.subjects = [];
+          }
+          return s;
+        });
+        return schedules; 
+      }
     } catch(e) {}
     
     try {
@@ -439,7 +454,7 @@ const DataModule = (() => {
         id: r.id || 'sch_' + i,
         owner_name: r.owner_name || r.nombre || r.asesor || '',
         email: r.email || r.correo || '',
-        type: (r.type || r.tipo || 'asesoria').toLowerCase(),
+        type: (r.type || r.tipo || 'asesoria').toLowerCase().replace('tutorial','tutoria'),
         day: r.day || r.dia || '',
         start: r.start || r.inicio || r.hora_inicio || '',
         end: r.end || r.fin || r.hora_fin || '',
@@ -530,6 +545,8 @@ const AuthModule = (() => {
 const AdminModule = (() => {
   let generated = null;
   let fileQueue = []; // {name, content, isXlsx}
+  let tablePage = 0;
+  const limit = 1000;
 
   const switchTab = (tabId, btn) => {
     document.querySelectorAll('.apanel').forEach(p => p.classList.remove('on'));
@@ -709,7 +726,7 @@ const AdminModule = (() => {
        (x.subjects||[]).join(';'), x.place||''].map(q).join(',')
     );
     
-    // SOLUCIÓN: Agregamos el BOM de UTF-8 (\uFEFF) al principio
+    
     const csvContent = '\uFEFF' + [header, ...rows].join('\r\n');
     downloadBlob(csvContent, 'schedules.csv', 'text/csv;charset=utf-8;');
     UIModule.toast('schedules.csv descargado. Súbelo a /data/ en el repositorio.','ok');
@@ -717,7 +734,7 @@ const AdminModule = (() => {
 
   const downloadBoth = () => {
     if (!generated) { UIModule.toast('No hay datos generados aún.','er'); return; }
-    // Primera descarga: JSON
+    
     downloadBlob(JSON.stringify(generated, null, 2), 'schedules.json', 'application/json');
     
     setTimeout(() => {
@@ -728,12 +745,12 @@ const AdminModule = (() => {
          (x.subjects||[]).join(';'), x.place||''].map(q).join(',')
       );
       
-   
       const csvContent = '\uFEFF' + [header, ...rows].join('\r\n');
       downloadBlob(csvContent, 'schedules.csv', 'text/csv;charset=utf-8;');
     }, 300);
     UIModule.toast('Descargando schedules.json y schedules.csv...','ok');
   };
+
   const downloadCurrentJSON = () => {
     const s = DataModule.getSchedules();
     if (!s.length) { UIModule.toast('No hay datos cargados.','er'); return; }
@@ -755,6 +772,7 @@ const AdminModule = (() => {
     await DataModule.loadSchedules();
     await DataModule.loadMaterias();
     refreshStats();
+    tablePage = 0; // Regresamos a la página 1
     renderDataTable();
     UIModule.toast('Datos recargados: ' + DataModule.getSchedules().length + ' horarios.','ok');
   };
@@ -769,9 +787,43 @@ const AdminModule = (() => {
 
   const renderDataTable = () => {
     const s = DataModule.getSchedules();
-    $('data-tbody').innerHTML = s.slice(0,100).map(x =>
-      `<tr><td>${x.id}</td><td>${x.owner_name}</td><td>${x.type}</td><td>${x.day}</td><td>${x.start}</td><td>${x.end}</td><td>${x.subjects.join(', ')}</td><td>${x.place||'—'}</td></tr>`
+    const totalPages = Math.ceil(s.length / limit);
+    if (tablePage >= totalPages) tablePage = Math.max(0, totalPages - 1);
+
+    const start = tablePage * limit;
+    const end = start + limit;
+    const paginated = s.slice(start, end);
+
+    $('data-tbody').innerHTML = paginated.map(x =>
+      `<tr><td>${x.id}</td><td>${x.owner_name}</td><td>${x.type}</td><td>${x.day}</td><td>${x.start}</td><td>${x.end}</td><td>${(x.subjects||[]).join(', ')}</td><td>${x.place||'—'}</td></tr>`
     ).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--tm);padding:1rem">Sin datos cargados</td></tr>';
+
+    // Control visual de los botones
+    const btnPrev = $('btn-admin-prev');
+    const btnNext = $('btn-admin-next');
+    const info = $('admin-page-info');
+    
+    if (btnPrev) btnPrev.disabled = tablePage === 0;
+    if (btnNext) btnNext.disabled = tablePage >= totalPages - 1 || s.length === 0;
+    if (info) info.textContent = `Página ${tablePage + 1} de ${totalPages || 1} (Total: ${s.length})`;
+  };
+
+  
+  const prevPage = () => {
+    if (tablePage > 0) { 
+      tablePage--; 
+      renderDataTable(); 
+    }
+  };
+
+  
+  const nextPage = () => {
+    const s = DataModule.getSchedules();
+    const totalPages = Math.ceil(s.length / limit);
+    if (tablePage < totalPages - 1) { 
+      tablePage++; 
+      renderDataTable(); 
+    }
   };
 
   const downloadTemplate = async type => {
@@ -786,11 +838,11 @@ const AdminModule = (() => {
     }
   };
 
+  
   return { switchTab, handleDrop, handleFileInput, removeFromQueue, clearQueue, processQueue,
            downloadJSON, downloadCSV, downloadBoth, downloadCurrentJSON, clearUpload,
-           reloadData, refreshStats, renderDataTable, downloadTemplate };
+           reloadData, refreshStats, renderDataTable, downloadTemplate, prevPage, nextPage };
 })();
-
 
 const UIModule = (() => {
   const VIEWS = ['login','admin'];
@@ -1129,7 +1181,6 @@ const ScheduleBuilderModule = (() => {
 
   const closeMateriaDropdown = () => hideEl($('sb-materia-dropdown'));
 
-  // ── Cargar datos actuales del servidor y combinar ────
   const loadFromServer = async () => {
     UIModule.toast('Cargando datos del servidor...', 'inf');
     try {
@@ -1140,12 +1191,16 @@ const ScheduleBuilderModule = (() => {
         UIModule.toast('No se encontraron horarios en el servidor.', 'er');
         return;
       }
+      serverData.forEach(s => {
+        if (typeof s.subjects === 'string') {
+          s.subjects = s.subjects.split(/[;|,]/).map(x => x.trim()).filter(Boolean);
+        }
+      });
+
       const current = getAll();
-      // Combinar: los del servidor primero, luego los nuevos (evitar duplicados por id)
       const existingIds = new Set(serverData.map(x => x.id));
       const newOnes = current.filter(x => !existingIds.has(x.id));
       const combined = [...serverData, ...newOnes];
-      // Re-numerar IDs correlativamente
       const renumbered = combined.map((s, i) => ({
         ...s,
         id: 'sch_' + String(i + 1).padStart(3, '0')
